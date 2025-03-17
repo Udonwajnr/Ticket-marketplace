@@ -1,111 +1,113 @@
-"use client"
-import { api } from "@/convex/_generated/api"
-import { useUser } from "@clerk/nextjs"
-import { useQuery } from "convex/react"
-import { useRouter } from "next/navigation"
-import { Id } from "@/convex/_generated/dataModel"
-import { useEffect, useState } from "react"
-import { Ticket } from "lucide-react"
-import ReleaseTicket from "./ReleaseTicket"
-import { createStripeCheckoutSession } from "@/actions/createStripeCheckout"
+"use client";
 
-const PurchaseTicket = ({eventId}:{eventId: Id<"events">}) => {
-    const router = useRouter()
-    const {user} = useUser()
-    const queuePositon = useQuery(api.waitingList.getQueuePosition,{eventId,userId:user?.id ?? "",})
+import { api } from "@/convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
+import { useQuery } from "convex/react";
+import { useRouter } from "next/navigation";
+import { Id } from "@/convex/_generated/dataModel";
+import { useEffect, useState } from "react";
+import { Ticket } from "lucide-react";
+import ReleaseTicket from "./ReleaseTicket";
+import { createStripeCheckoutSession } from "@/actions/createStripeCheckout";
 
-    const [timeRemaining,setTimeRemaining] = useState("")
-    const [isLoading,setIsLoading] = useState(false)
-
-    const offerExpiresAt = queuePositon?.offerExpiresAt??0;
-    const isExpired = Date.now() > offerExpiresAt;
-
-    useEffect(()=>{
-        const calculatingTimeRemaining =()=>{
-            if(isExpired){
-                setTimeRemaining("Expired")
-                return;
-            }
-
-            const diff = offerExpiresAt - Date.now()
-            const minutes = Math.floor(diff/1000/60)
-            const seconds = Math.floor((diff/1000) % 60);
-
-            if(minutes > 0){
-                setTimeRemaining(`${minutes} minutes${minutes === 1?"":"s"} ${seconds} second${seconds === 1? "":"s"}`)
-            }
-            else{
-                setTimeRemaining(`${seconds} second${seconds === 1?"":"s"}`);
-            }
-        };
-        const interval = setInterval(calculatingTimeRemaining,1000);
-        return()=>clearInterval(interval);
-    },[offerExpiresAt,isExpired])
-
-    // create stripe checkout...
-    const handlePurchase =async()=>{
-        if(!user) return;
-        try{
-            setIsLoading(true);
-            const {sessionUrl} = await createStripeCheckoutSession({
-                eventId
-            })
-            if(sessionUrl){
-                router.push(sessionUrl)
-            }
-        }catch(error){
-
-        }
-        finally{
-            setIsLoading(false)
-        }
-    };
-      if(!user || !queuePositon || queuePositon.status !== "offered"){
-        return null
-    }
-    
-
-
-    return (
-    <div className="bg-white p-6 rounded shadow-lg border border-amber-200">
-        <div className="space-y-4">
-             <div className="space-y-4">
-                <div className="bg-white rounded-lg p-6 border border-gray-200">
-                    <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h12 rounded-full bg-amber-100 flex item-center justify-center">
-                                <Ticket className="w-6 h-6 text-amber-600"/>
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-semibold text-gray-500">Ticket Reserved</h3>
-                                <p className="text-sm text-gray-500">
-                                    Expires in {timeRemaining}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="text-lg font-semibold text-gray-500">
-                            A ticket has been reserved for you. Complete your purchase before the 
-                            timer expires to secure your spot in this event.            
-                    </div>
-                </div>
-             </div>
-             <button
-                onClick={handlePurchase}
-                disabled={isExpired || isLoading}
-                className="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white px-8 py-4 rounded-lg font-bold shadow-md hover:from-amber-600 hover:to-amber-700 transform hover:scale-(1.02) transition-all duration-200 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed disabled:hover:scale-100 text-lg"
-             >
-                {
-                    isLoading?"Redirecting to checkout..."
-                    :"Purchase Your Ticket Now"
-                }
-             </button>
-             <div className="mt-4">
-                <ReleaseTicket eventId={eventId} waitingListId={queuePositon._id}/>
-             </div>
-        </div>
-    </div>
-  )
+interface PurchaseTicketProps {
+  eventId: Id<"events">;
 }
 
-export default PurchaseTicket
+const PurchaseTicket = ({ eventId }: PurchaseTicketProps) => {
+  const router = useRouter();
+  const { user } = useUser();
+  
+  const queuePosition = useQuery(api.waitingList.getQueuePosition, {
+    eventId,
+    userId: user?.id ?? "",
+  });
+
+  const [timeRemaining, setTimeRemaining] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const offerExpiresAt = queuePosition?.offerExpiresAt ?? 0;
+  const isExpired = Date.now() > offerExpiresAt;
+
+  useEffect(() => {
+    if (!offerExpiresAt) return;
+
+    const updateTimeRemaining = () => {
+      if (isExpired) {
+        setTimeRemaining("Expired");
+        return;
+      }
+
+      const diff = offerExpiresAt - Date.now();
+      const minutes = Math.floor(diff / 1000 / 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+
+      setTimeRemaining(
+        minutes > 0
+          ? `${minutes} minute${minutes === 1 ? "" : "s"} ${seconds} second${seconds === 1 ? "" : "s"}`
+          : `${seconds} second${seconds === 1 ? "" : "s"}`
+      );
+    };
+
+    const interval = setInterval(updateTimeRemaining, 1000);
+    return () => clearInterval(interval);
+  }, [offerExpiresAt, isExpired]);
+
+  const handlePurchase = async () => {
+    if (!user) return;
+
+    try {
+      setIsLoading(true);
+      const { sessionUrl } = await createStripeCheckoutSession({ eventId });
+
+      if (sessionUrl) {
+        router.push(sessionUrl);
+      }
+    } catch (error) {
+      console.error("Error creating Stripe checkout session:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!user || !queuePosition || queuePosition.status !== "offered") {
+    return null;
+  }
+
+  return (
+    <div className="bg-white p-6 rounded shadow-lg border border-amber-200">
+      <div className="space-y-4">
+        <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+                <Ticket className="w-6 h-6 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-500">Ticket Reserved</h3>
+                <p className="text-sm text-gray-500">Expires in {timeRemaining}</p>
+              </div>
+            </div>
+          </div>
+          <div className="text-lg font-semibold text-gray-500">
+            A ticket has been reserved for you. Complete your purchase before the timer expires to secure your spot in this event.
+          </div>
+        </div>
+
+        <button
+          onClick={handlePurchase}
+          disabled={isExpired || isLoading}
+          className="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white px-8 py-4 rounded-lg font-bold shadow-md hover:from-amber-600 hover:to-amber-700 transform hover:scale-105 transition-all duration-200 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed disabled:hover:scale-100 text-lg"
+        >
+          {isLoading ? "Redirecting to checkout..." : "Purchase Your Ticket Now"}
+        </button>
+
+        <div className="mt-4">
+          <ReleaseTicket eventId={eventId} waitingListId={queuePosition._id} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PurchaseTicket;

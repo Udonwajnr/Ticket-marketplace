@@ -35,7 +35,7 @@ const SellerEventList = () => {
   }
 
   // Sort events by date
-  const sortEvents = (events) => {
+  const sortEvents = (events:any) => {
     return [...events].sort((a, b) => {
       if (sortOrder === "asc") {
         return a.eventDate - b.eventDate

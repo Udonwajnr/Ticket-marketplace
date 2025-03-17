@@ -3,7 +3,7 @@ import { stripe } from "@/lib/stripe";
 import { getConvexClient } from "@/lib/convex";
 import { api } from "@/convex/_generated/api";
 import Stripe from "stripe";
-import { StriptCheckoutMetaData } from "@/actions/createStripeCheckout";
+import { StripeCheckoutMetaData } from "@/actions/createStripeCheckout";
 
 export async function POST(req: Request) {
     console.log("Webhook received");
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     if (event.type === "checkout.session.completed") {
         console.log("Processing checkout.session.completed");
         const session = event.data.object as Stripe.Checkout.Session;
-        const metadata = session.metadata as StriptCheckoutMetaData;
+        const metadata = session.metadata as StripeCheckoutMetaData;
 
         console.log("Session metadata", metadata);
         console.log("Convex client", convex);
