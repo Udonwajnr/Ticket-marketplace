@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
       protocol:"https"
     },
     {
-      hostname:"https://elegant-mallard-692.convex.cloud",
+      hostname:"elegant-mallard-692.convex.cloud",
       protocol:"https"
     }
   ]
