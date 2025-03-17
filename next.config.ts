@@ -6,7 +6,12 @@ const nextConfig: NextConfig = {
     remotePatterns:[{
       hostname:"third-hedgehog-933.convex.cloud",
       protocol:"https"
-    }]
+    },
+    {
+      hostname:"https://elegant-mallard-692.convex.cloud",
+      protocol:"https"
+    }
+  ]
   }
 };
 
