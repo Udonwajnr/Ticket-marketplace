@@ -191,7 +191,7 @@ const renderQueuePosition =()=>{
             <div className='flex items-center text-gray-600'>
               <CalendarDays className='w-4 h-4 mr-2'/>
               <span>
-              {new Date(eventTimestamp).toLocaleDateString()}{" "}
+              {new Date(event.eventDate).toLocaleDateString()}{" "}
               {isPastEvent && "(Ended)"}
               </span>
             </div>

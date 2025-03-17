@@ -62,7 +62,7 @@ const event = await convex.query(api.events.getById,{eventId});
         payment_method_types:["card"],
         line_items:[
             {
-                price_date:{
+                price_data:{
                     currency:"usd",
                     product_data:{
                         name:event.name,
@@ -79,7 +79,7 @@ const event = await convex.query(api.events.getById,{eventId});
         },
         expires_at:Math.floor(Date.now()/1000) + DURATIONS.TICKET_OFFER/1000,
         // (stripe checkout minimum expiration time)
-        node:"payment",
+        mode:"payment",
         success_url:`${baseUrl}/tickets/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/event/${eventId}`,
         metadata,
@@ -89,5 +89,8 @@ const event = await convex.query(api.events.getById,{eventId});
     }
 )
 
-    return {sessionId:session.id,sessionUrl:session.url}
+    return {
+        sessionId:session.id,
+        sessionUrl:session.url
+    }
 }

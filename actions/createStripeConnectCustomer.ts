@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { api } from "@/convex/_generated/api";
 import { ConvexHttpClient } from "convex/browser";
 import { stripe } from "@/lib/stripe";
+
 if(!process.env.NEXT_PUBLIC_CONVEX_URL){
     throw new Error("NEXT_PUBLIC_CONVEX_URL is not set")
 }
@@ -26,13 +27,13 @@ export async function createStriptConnectCustomer(){
         return {account:existingStripeConnectId}
     }
 
-    const account = await stripe.account.create({
-        type:"express",
-        capabilities:{
-            card_payment:{requested:true},
-            transfers:{requested:true}
+    const account = await stripe.accounts.create({
+        type: "express",
+        capabilities: {
+            card_payments: {requested:true},  
+            transfers: {requested:true}
         }
-    })
+    });
 
     await convex.mutation(api.users.updateOrCreateUserStripeConnectId,{
         userId,

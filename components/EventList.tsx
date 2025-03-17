@@ -5,9 +5,10 @@ import { api } from "@/convex/_generated/api"
 import Spinner from "./Spinner"
 import { CalendarDays, Ticket } from "lucide-react"
 import EventCard from "./EventCard"
+
 function EventList(){
     const events = useQuery(api.events.get)
-    console.log(events)
+    // console.log(events)
     if(!events){
         return(
             <div className="min-h-[400px] flex items-center justify-center">
@@ -15,23 +16,26 @@ function EventList(){
             </div>
         )
     }
+
     const convertToTimestamp = (yyyymmdd: number): number => {
         const year = Math.floor(yyyymmdd / 10000);
         const month = Math.floor((yyyymmdd % 10000) / 100) - 1; // Months are 0-based in JS
         const day = yyyymmdd % 100;
     
-        return new Date(year, month, day).getTime(); // Convert to milliseconds
-    };
+        // Ensure the date is set at midnight UTC (00:00:00)
+        const date = new Date(Date.UTC(year, month, day));
     
+        return date.getTime(); // Convert to milliseconds since Unix Epoch
+    };
     
     // Convert event dates to timestamps
     const upcomingEvents = events
-        .filter((event) => convertToTimestamp(event.eventDate) > Date.now())
-        .sort((a, b) => convertToTimestamp(a.eventDate) - convertToTimestamp(b.eventDate));
+        .filter((event) => event.eventDate > Date.now())
+        .sort((a, b) => a.eventDate - b.eventDate);
     
     const pastEvent = events
-        .filter((event) => convertToTimestamp(event.eventDate) <= Date.now())
-        .sort((a, b) => convertToTimestamp(b.eventDate) - convertToTimestamp(a.eventDate));
+        .filter((event) => event.eventDate <= Date.now())
+        .sort((a, b) => b.eventDate - a.eventDate);
     
     return(
          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

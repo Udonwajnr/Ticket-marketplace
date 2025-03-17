@@ -7,6 +7,7 @@ import { Id } from "@/convex/_generated/dataModel"
 import { useEffect, useState } from "react"
 import { Ticket } from "lucide-react"
 import ReleaseTicket from "./ReleaseTicket"
+import { createStripeCheckoutSession } from "@/actions/createStripeCheckout"
 
 const PurchaseTicket = ({eventId}:{eventId: Id<"events">}) => {
     const router = useRouter()
@@ -42,7 +43,23 @@ const PurchaseTicket = ({eventId}:{eventId: Id<"events">}) => {
     },[offerExpiresAt,isExpired])
 
     // create stripe checkout...
-    const handlePurchase =async()=>{};
+    const handlePurchase =async()=>{
+        if(!user) return;
+        try{
+            setIsLoading(true);
+            const {sessionUrl} = await createStripeCheckoutSession({
+                eventId
+            })
+            if(sessionUrl){
+                router.push(sessionUrl)
+            }
+        }catch(error){
+
+        }
+        finally{
+            setIsLoading(false)
+        }
+    };
       if(!user || !queuePositon || queuePositon.status !== "offered"){
         return null
     }

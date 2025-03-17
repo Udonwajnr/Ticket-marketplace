@@ -22,9 +22,9 @@ export async function getStriptConnectAccountStatus(
         throw new Error("No Stripe Account ID Provided")
     }
     try{
-        const account = await stripe.account.retrieve(stripeAccountId)
+        const account = await stripe.accounts.retrieve(stripeAccountId)
         return {
-            isActive:account.details_sumitted && 
+            isActive:account.details_submitted && 
             !account.requirements?.currently_due?.length,
             requiresInformation:!!(
                 account.requirements?.currently_due?.length ||
@@ -33,7 +33,7 @@ export async function getStriptConnectAccountStatus(
             ),
             requirements:{
                 currently_due:account.requirements?.currently_due || [],
-                eventually_due:account.requuirements?.eventually_due || [],
+                eventually_due:account.requirements?.eventually_due || [],
                 past_due:account.requirements?.past_due || []
             },
             chargesEnabled:account.charges_enabled,
