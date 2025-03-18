@@ -1,4 +1,4 @@
-const baseUrl = "https://ticket-marketplace-six.vercel.app"
+const baseUrl = "http://localhost:3000/"
 //   process.env.NODE_ENV === "development"
 //     ? "http://localhost:3000/"
 
