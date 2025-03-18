@@ -47,7 +47,7 @@ const event = await convex.query(api.events.getById,{eventId});
     }
 
     if(!queuePosition.offerExpiresAt){
-        return new Error("Ticket offer has not expiration Date")
+        throw new Error("Ticket offer has not expiration Date")
     }
  
     const metadata:StripeCheckoutMetaData ={
