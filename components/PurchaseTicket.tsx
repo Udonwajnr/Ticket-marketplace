@@ -57,12 +57,14 @@ const PurchaseTicket = ({ eventId }: PurchaseTicketProps) => {
     if (!user) return;
 
     try {
-      setIsLoading(true);
+      setIsLoading(true); 
       const { sessionUrl } = await createStripeCheckoutSession({ eventId });
 
+      console.log(sessionUrl)
       if (sessionUrl) {
         router.push(sessionUrl);
       }
+      
     } catch (error) {
       console.error("Error creating Stripe checkout session:", error);
     } finally {

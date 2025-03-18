@@ -3,7 +3,7 @@ import {v} from "convex/values"
 import { DURATIONS, TICKET_STATUS, WAITING_LIST_STATUS } from "./constants";
 import { internal } from "./_generated/api";
 
-export const getQueuePosition =query({
+export const getQueuePosition = query({
   args:{
     eventId:v.id("events"),
     userId:v.string(),
@@ -32,7 +32,7 @@ export const getQueuePosition =query({
     .then((entries)=>entries.length);
     return{
         ...entry,
-        position:peopelAhead+1
+        position:peopelAhead + 1
     }
 }
 })

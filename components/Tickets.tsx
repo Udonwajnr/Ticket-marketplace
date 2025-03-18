@@ -2,17 +2,11 @@
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
 import { useQuery } from "convex/react"
-import QRCODE from "react-qr-code"
 import Spinner from "./Spinner"
 import { useStorageUrl } from "@/lib/utils"
 import Image from "next/image"
 import QRCode from "react-qr-code"
 import { CalendarDays, MapPin, User, BadgeIcon as IdCard, TicketIcon, Share2, Printer, Info } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 
 
 function Ticket({ticketId}:{ticketId:Id<"Tickets">}) {

@@ -14,6 +14,10 @@ async function TicketSuccess(){
     const tickets = await convex.query(api.events.getUserTickets,{userId}) 
     const latestTickets = tickets[tickets.length - 1]
     
+    console.log(tickets)
+
+    console.log(latestTickets)
+
     if(!latestTickets){
         redirect("/")
     }

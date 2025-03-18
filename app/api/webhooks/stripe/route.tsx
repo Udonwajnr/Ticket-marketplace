@@ -53,6 +53,7 @@ export async function POST(req: Request) {
             });
             console.log("Purchase ticket mutation completed", result);
         } catch (error) {
+            console.log("there is an error")
             console.error("Error processing webhook:", error);
             return new Response("Error processing webhook", { status: 500 });
         }

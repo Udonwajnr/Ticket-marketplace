@@ -191,7 +191,7 @@ export const updateEvent = mutation({
         totalTickets:v.number(),
         },
         handler:async (ctx,args)=>{
-            const {eventId,...updates} = args
+            const {eventId, ...updates} = args
             // Get Current event to check tickets sold
 
             const event = await ctx.db.get(eventId);
@@ -203,7 +203,7 @@ export const updateEvent = mutation({
         )
         .collect()
 
-        if(updates.totalTickets<soldTickets.length){
+        if(updates.totalTickets < soldTickets.length){
             throw new Error(
                 `Cannot reduce total tickets below ${soldTickets.length}(number of tickets already sold)`
             )
@@ -214,84 +214,80 @@ export const updateEvent = mutation({
 })
 
 export const purchaseTicket = mutation({
-    args:{
-        eventId:v.id("events"),
-        userId:v.string(),
-        waitingListId:v.id("waitingList"),
-        paymentInfo:v.object({
-            paymentIntentId:v.string(),
-            amount:v.number()
-        }),
+    args: {
+      eventId: v.id("events"),
+      userId: v.string(),
+      waitingListId: v.id("waitingList"),
+      paymentInfo: v.object({
+        paymentIntentId: v.string(),
+        amount: v.number(),
+      }),
     },
-    handler:async(ctx,{eventId,userId,waitingListId,paymentInfo})=>{
-      console.log("Starting purchaseTicket handler",{
-        eventId,userId,waitingListId
-      }) ;
-      
+    handler: async (ctx, { eventId, userId, waitingListId, paymentInfo }) => {
+      console.log("Starting purchaseTicket handler", { eventId, userId, waitingListId });
+  
       const waitingListEntry = await ctx.db.get(waitingListId);
-      console.log("Waiting list entry:",waitingListEntry);
-
-      if(!waitingListEntry){
+      console.log("Waiting list entry:", waitingListEntry);
+  
+      if (!waitingListEntry) {
         console.error("Waiting list entry not found");
-        throw new Error("Waiting list entry not found")
+        throw new Error("Waiting list entry not found");
       }
-
-      if(waitingListEntry.status !== WAITING_LIST_STATUS.OFFERED){
-        console.error("Invalid waiting list status",{
-            status:waitingListEntry.status
+  
+      if (waitingListEntry.status !== WAITING_LIST_STATUS.OFFERED) {
+        console.error("Invalid waiting list status", { status: waitingListEntry.status });
+        throw new Error("Invalid waiting list status - ticket offer may have expired");
+      }
+  
+      if (waitingListEntry.userId !== userId) {
+        console.error("User ID mismatch", {
+          waitingListEntryUserId: waitingListEntry.userId,
+          requestUserId: userId,
         });
-        throw new Error(
-            "Invalid waiting list status - ticket offer may have expired"
-        )
+        throw new Error("Waiting list entry does not belong to this user");
       }
-
-      if(waitingListEntry.userId !== userId){
-        console.error("user ID mismatch", {
-            waitingListEntryUserId:waitingListEntry.userId,
-            requestUserId:userId
-        })
-        throw new Error("Waiting list entry does not belong to this user")
-      }
-
+  
       const event = await ctx.db.get(eventId);
-      console.log("Event details",event) 
-
-      if(!event){
-        console.error("Event not found",{eventId});
-        throw new Error("event not found")
+      console.log("Event details", event);
+  
+      if (!event) {
+        console.error("Event not found", { eventId });
+        throw new Error("Event not found");
       }
-
-      if(event.is_cancelled){
-        console.error("Attempted purchase of cancelled event",{eventId});
-        throw new Error("event is no longer active")
+  
+      if (event.is_cancelled) {
+        console.error("Attempted purchase of cancelled event", { eventId });
+        throw new Error("Event is no longer active");
       }
-      try{
-        console.log("Creating ticket with payment info",paymentInfo)
-        await ctx.db.insert("Tickets",{
-            eventId,
-            userId,
-            purchasedAt:Date.now(),
-            status:TICKET_STATUS.VALID,
-            paymentIntentId:paymentInfo.paymentIntentId,
-            amount:paymentInfo.amount
-        })
-
-        console.log("updating Waiting list status to purchase")
-        await ctx.db.patch(waitingListId,{
-            status:WAITING_LIST_STATUS.PURCHASED,
-        })
-        console.log("Process queue for next person")
-        // Prcoesss queue for next person
-
-        await processQueue(ctx,{eventId});
-        console.log("Purchase ticke completed successfully")
-      }
-      catch(error){
-        console.error("Falied to complete ticket purchase:",error);
-        throw new Error(`Failed to complete ticket purchase:${error}`)
+  
+      try {
+        console.log("Creating ticket with payment info", paymentInfo);
+        await ctx.db.insert("Tickets", {
+          eventId,
+          userId,
+          purchasedAt: Date.now(),
+          status: TICKET_STATUS.VALID,
+          paymentIntentId: paymentInfo.paymentIntentId,
+          amount: paymentInfo.amount,
+        });
+  
+        console.log("Updating waiting list status to PURCHASED");
+        await ctx.db.patch(waitingListId, {
+          status: WAITING_LIST_STATUS.PURCHASED,
+        });
+  
+        console.log("Processing queue for the next person...");
+        await processQueue(ctx, { eventId });
+  
+        console.log("Purchase ticket completed successfully");
+      } catch (error) {
+        console.error("Failed to complete ticket purchase:", error);
+        throw new Error(
+          `Failed to complete ticket purchase: ${error instanceof Error ? error.message : JSON.stringify(error)}`
+        );
       }
     },
-})
+  });
 
 export const getUserTickets = query({
     args:{userId:v.string()},
