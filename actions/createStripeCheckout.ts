@@ -78,8 +78,8 @@ const event = await convex.query(api.events.getById,{eventId});
         expires_at:Math.floor(Date.now()/1000) + DURATIONS.TICKET_OFFER/1000,
         // (stripe checkout minimum expiration time)
         mode:"payment",
-        success_url:`https://ticket-marketplace-six.vercel.app/tickets/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `https://ticket-marketplace-six.vercel.app/event/${eventId}`,
+        success_url:`${baseUrl}/tickets/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/event/${eventId}`,
         metadata,
     },
     {
