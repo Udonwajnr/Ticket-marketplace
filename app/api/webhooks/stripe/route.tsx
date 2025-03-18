@@ -31,6 +31,7 @@ export async function POST(req: Request) {
         });
     }
 
+    
     const convex = getConvexClient();
 
     if (event.type === "checkout.session.completed") {
