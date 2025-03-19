@@ -16,17 +16,6 @@ function EventList(){
             </div>
         )
     }
-
-    const convertToTimestamp = (yyyymmdd: number): number => {
-        const year = Math.floor(yyyymmdd / 10000);
-        const month = Math.floor((yyyymmdd % 10000) / 100) - 1; // Months are 0-based in JS
-        const day = yyyymmdd % 100;
-    
-        // Ensure the date is set at midnight UTC (00:00:00)
-        const date = new Date(Date.UTC(year, month, day));
-    
-        return date.getTime(); // Convert to milliseconds since Unix Epoch
-    };
     
     // Convert event dates to timestamps
     const upcomingEvents = events

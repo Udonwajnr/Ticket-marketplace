@@ -37,18 +37,33 @@ const EventCard = ({ eventId }: { eventId: Id<"events"> }) => {
     return null
   }
 
-  const parseYYYYMMDDToTimestamp = (yyyymmdd: number): number => {
-    const year = Math.floor(yyyymmdd / 10000)
-    const month = Math.floor((yyyymmdd % 10000) / 100) - 1 // JavaScript months are 0-based
-    const day = yyyymmdd % 100
+  // Check if the event date is a timestamp or YYYYMMDD format
+  const isTimestamp = event.eventDate > 100000000000 // Timestamps are typically large numbers
 
-    return new Date(year, month, day).getTime() // Convert to timestamp in milliseconds
-  }
+  // Get the event timestamp based on the format
+  const eventTimestamp = isTimestamp
+    ? event.eventDate
+    : (() => {
+        // Parse YYYYMMDD format
+        const dateStr = event.eventDate.toString()
+        const year = Number.parseInt(dateStr.substring(0, 4))
+        const month = Number.parseInt(dateStr.substring(4, 6)) - 1 // JS months are 0-based
+        const day = Number.parseInt(dateStr.substring(6, 8))
+        return new Date(year, month, day).getTime()
+      })()
 
-  // Correctly parse event date
-  const eventTimestamp = parseYYYYMMDDToTimestamp(event.eventDate)
   const isPastEvent = eventTimestamp < Date.now()
   const isEventOwner = user?.id === event?.userId
+
+  // Format date for display
+  const formatEventDate = () => {
+    const date = new Date(eventTimestamp)
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
+  }
 
   const renderQueuePosition = () => {
     if (!queuePositon || queuePositon.status !== "waiting") return null
@@ -200,12 +215,7 @@ const EventCard = ({ eventId }: { eventId: Id<"events"> }) => {
           <div className="flex items-center text-gray-600">
             <CalendarDays className="w-4 h-4 mr-2 flex-shrink-0 text-gray-500" />
             <span className="text-sm sm:text-base">
-              {new Date(event.eventDate).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              })}{" "}
-              {isPastEvent && "(Ended)"}
+              {formatEventDate()} {isPastEvent && "(Ended)"}
             </span>
           </div>
 

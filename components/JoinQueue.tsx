@@ -49,17 +49,22 @@ const JoinQueue = ({eventId,userId}:{eventId:Id<"events">;userId:string}) => {
     return null
   }
 
-  const parseYYYYMMDDToTimestamp = (yyyymmdd: number): number => {
-    const year = Math.floor(yyyymmdd / 10000);
-    const month = Math.floor((yyyymmdd % 10000) / 100) - 1; // JavaScript months are 0-based
-    const day = yyyymmdd % 100;
-    
-    return new Date(year, month, day).getTime(); // Convert to timestamp in milliseconds
-};
+const isTimestamp = event.eventDate > 100000000000
+
+const eventTimestamp = isTimestamp
+    ? event.eventDate
+    : (() => {
+        // Parse YYYYMMDD format
+        const dateStr = event.eventDate.toString()
+        const year = Number.parseInt(dateStr.substring(0, 4))
+        const month = Number.parseInt(dateStr.substring(4, 6)) - 1 // JS months are 0-based
+        const day = Number.parseInt(dateStr.substring(6, 8))
+        return new Date(year, month, day).getTime()
+      })()
 
 // Correctly parse event date
-const eventTimestamp = parseYYYYMMDDToTimestamp(event.eventDate);
-const isPastEvent = eventTimestamp < Date.now();
+const isPastEvent = eventTimestamp < Date.now()
+
   return (
     <div>
       {(
