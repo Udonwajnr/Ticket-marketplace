@@ -138,7 +138,7 @@ const Search = () => {
             </div>
             <div className="h-1 w-20 bg-primary mb-6 rounded-full"></div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {upcomingEvents.map((event: SearchEvent) => (
+              {upcomingEvents.map((event) => (
                 <EventCard key={event._id} eventId={event._id} />
               ))}
             </div>
@@ -154,7 +154,7 @@ const Search = () => {
             </div>
             <div className="h-1 w-20 bg-gray-300 mb-6 rounded-full"></div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {pastEvents.map((event: SearchEvent) => (
+              {pastEvents.map((event) => (
                 <EventCard key={event._id} eventId={event._id} />
               ))}
             </div>
